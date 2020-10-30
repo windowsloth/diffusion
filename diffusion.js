@@ -1,7 +1,7 @@
 let w;
 let h;
 
-const turb = 0.1;
+const turb = 0.05;
 
 let dry = [];
 const field = [];
@@ -16,7 +16,7 @@ function preload() {
 
 function setup() {
   noLoop();
-  noiseSeed(13);
+  // noiseSeed(13);
   pixelDensity(1);
   w = img.width;
   h = img.height;
@@ -26,11 +26,13 @@ function setup() {
 }
 
 function draw() {
-  flowField(field);
-  diffuseImage(img, field);
+  // flowField(field);
+  diffuseImage(img);
 }
 
-function flowField(arr) {
+function flowField() {
+  noiseSeed(random(255));
+  const arr = [];
   let yoff = 0;
   for (let y = 0; y < h; y++) {
     let xoff = 0;
@@ -43,36 +45,55 @@ function flowField(arr) {
     }
     yoff += turb;
   }
+  return arr;
 }
 
-function diffuseImage(source, arr) {
+function diffuseImage(source) {
+  let rfield = flowField();
+  let gfield = flowField();
+  let bfield = flowField();
   let imgw = source.width;
   let imgh = source.height;
   let dry = [];
   source.loadPixels();
-  for (let item of source.pixels) {
-    dry.push(item);
+  // for (let item of source.pixels) {
+  //   dry.push(item);
+  // }
+  for (let l=0; l < source.pixels.length; l++) {
+    dry.push(source.pixels[l]);
+    source.pixels[l] = 0;
   }
+  console.log(dry);
   for (let j = 0; j < imgh; j++) {
     for (let i = 0; i < imgw; i++) {
       let pos = (j * imgw + i) * 4;
-      let mod = arr[j * imgw + i];
-      let newpos = ((round(j + mod.y)) * imgw + round((i + mod.x))) * 4;
-      if (round(i + mod.x > 0) && round(j + mod.y) > 0) {
-        source.pixels[pos    ] = dry[newpos    ];
-        source.pixels[pos + 1] = dry[newpos + 1];
-        source.pixels[pos + 2] = dry[newpos + 2];
+      let rmod = rfield[j * imgw + i];
+      let bmod = gfield[j * imgw + i];
+      let gmod = gfield[j * imgw + i];
+      let rpos = ((round(j + rmod.y)) * imgw + round((i + rmod.x)));
+      let gpos = ((round(j + gmod.y)) * imgw + round((i + gmod.x)));
+      let bpos = ((round(j + bmod.y)) * imgw + round((i + bmod.x)));
+      if (
+          round(i + rmod.x > 0) && round(j + rmod.y) > 0 &&
+          round(i + gmod.x > 0) && round(j + gmod.y) > 0 &&
+          round(i + bmod.x > 0) && round(j + bmod.y) > 0
+        ) {
+        source.pixels[pos    ] += dry[rpos    ];
+        source.pixels[pos + 1] += dry[gpos];
+        source.pixels[pos + 2] += dry[bpos];
+        source.pixels[pos + 3] = 255;
 
-        source.pixels[newpos    ] = dry[pos    ];
-        source.pixels[newpos + 1] = dry[pos + 1];
-        source.pixels[newpos + 2] = dry[pos + 2];
+        source.pixels[rpos    ] += dry[pos    ];
+        source.pixels[gpos] += dry[pos + 1];
+        source.pixels[bpos] += dry[pos + 2];
+        source.pixels[rpos + 3] = 255;
       } else {
         source.pixels[pos] = 255;
         source.pixels[pos + 1] = 255;
         source.pixels[pos + 2] = 255;
-        source.pixels[newpos] = 255;
-        source.pixels[newpos + 1] = 255;
-        source.pixels[newpos + 2] = 255;
+        source.pixels[rpos] = 255;
+        source.pixels[gpos + 1] = 255;
+        source.pixels[bpos + 2] = 255;
       }
     }
   }
