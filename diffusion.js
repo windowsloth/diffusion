@@ -49,5 +49,6 @@ function flowField() {
 
 function diffuse() {
   loadPixels();
+
   updatePixels();
 }
