@@ -20,62 +20,34 @@ function setup() {
   pixelDensity(1);
   w = img.width;
   h = img.height;
-  createCanvas(w * 2, h);
+  createCanvas(w * 3, h);
   background(220);
   image(img, 0, 0);
 }
 
 function draw() {
-  flowField(field);
-  diffuseImage(img, field);
+  flowField();
 }
 
-function flowField(arr) {
-  let yoff = 0;
-  for (let y = 0; y < h; y++) {
-    let xoff = 0;
-    for (let x = 0; x < w; x++) {
-      let a = noise(xoff, yoff) * TWO_PI;
-      let vec = p5.Vector.fromAngle(a);
-      vec.mult(10);
-      arr.push(vec);
-      xoff += turb;
+function flowField() {
+  const step = .025;
+  let xoff = 0;
+  for (let i = 0; i < w; i++) {
+    let yoff = 0;
+    for (let j = 0; j < h; j++) {
+      let noiseval = noise(xoff, yoff);
+      let noisecolor = map(noiseval, 0, 1  , 0, 255);
+      let noiseangle = map(noiseval, 0, 1, 0, TWO_PI);
+      field.push(p5.Vector.fromAngle(noiseangle));
+      stroke(noisecolor);
+      point(i + w * 2, j);
+      yoff += step;
     }
-    yoff += turb;
+    xoff += step;
   }
 }
 
-function diffuseImage(source, arr) {
-  let imgw = source.width;
-  let imgh = source.height;
-  let dry = [];
-  source.loadPixels();
-  for (let item of source.pixels) {
-    dry.push(item);
-  }
-  for (let j = 0; j < imgh; j++) {
-    for (let i = 0; i < imgw; i++) {
-      let pos = (j * imgw + i) * 4;
-      let mod = arr[j * imgw + i];
-      let newpos = ((round(j + mod.y)) * imgw + round((i + mod.x))) * 4;
-      if (round(i + mod.x > 0) && round(j + mod.y) > 0) {
-        source.pixels[pos    ] = dry[newpos    ];
-        source.pixels[pos + 1] = dry[newpos + 1];
-        source.pixels[pos + 2] = dry[newpos + 2];
-
-        source.pixels[newpos    ] = dry[pos    ];
-        source.pixels[newpos + 1] = dry[pos + 1];
-        source.pixels[newpos + 2] = dry[pos + 2];
-      } else {
-        source.pixels[pos] = 255;
-        source.pixels[pos + 1] = 255;
-        source.pixels[pos + 2] = 255;
-        source.pixels[newpos] = 255;
-        source.pixels[newpos + 1] = 255;
-        source.pixels[newpos + 2] = 255;
-      }
-    }
-  }
-  source.updatePixels();
-  image(source, imgw, 0);
+function diffuse() {
+  loadPixels();
+  updatePixels();
 }
