@@ -1,13 +1,14 @@
 let w;
 let h;
 
-const turb = 100;
-const blur = 0;
-const passes = 1;
+const turb = 60;
+const blur = 15;
+const passes = 0;
 
 const dry = [];
-const field = [];
-const kernels = [];
+const order = [];
+const field = [[], [], []];
+const kernels = [[], [], []];
 let seeds = [];
 
 // const redfield = [];
@@ -22,7 +23,7 @@ let div;
 let img;
 
 function preload() {
-  img = loadImage('./275x500.jpg');
+  img = loadImage('./kings.jpg');
   w = img.width;
   h = img.height;
 }
@@ -48,27 +49,24 @@ function draw() {
   diffuse();
 }
 
-// function mousePressed() {
-//   console.log("oho!");
-//   diffuse();
-//   console.log("done");
-// }
-
 function flowField(arr, channels) {
-  const step = .1;
-  let xoff = 0;
+  const step = .015;
   for (let s = 0; s < channels; s++) {
-    for (let i = 0; i < w; i++) {
-      let yoff = 0;
-      for (let j = 0; j < h; j++) {
+    seeds[s] = random(millis()) * random(1000);
+    noiseSeed(seeds[s]);
+    let yoff = 0;
+    for (let i = 0; i < h; i++) {
+      let xoff = 0;
+      for (let j = 0; j < w; j++) {
         let noiseval = noise(xoff, yoff);
-        let noisecolor = map(noiseval, 0, 1  , 0, 255);
+        let noisecolor = map(noiseval, 0, 1, 0, 255);
         let noiseangle = noiseval * TWO_PI;
         let noisedist = map(noiseval, 0, 1, 0, turb);
         let noisevec = p5.Vector.fromAngle(noiseangle);
         noisevec.mult(noisedist);
-        arr.push(noisevec);
+        arr[s].push(noisevec);
 
+        kernels[s].push(floor(noiseval * blur));
         // stroke(255, 255, 255, 10);
         // push();
         // translate(i, j);
@@ -76,26 +74,40 @@ function flowField(arr, channels) {
         // line(0, 0, noisevec.mag(), 0);
         // pop();
 
-        yoff += step;
+        xoff += step;
       }
-      xoff += step;
+      yoff += step;
     }
   }
 }
 
 function diffuse() {
   loadPixels();
-  for (let pixel of pixels) {
-    dry.push(pixel);
+  for (let p = 0; p < w * h; p++) {
+    // console.log('hi');
+    order.push(p);
+    dry.push(pixels[p * 4]);
+    dry.push(pixels[p * 4 + 1]);
+    dry.push(pixels[p * 4 + 2]);
+    dry.push(pixels[p * 4 + 3]);
   }
+  shuffle(order, true);
+  // for (let pixel of pixels) {
+  //   dry.push(pixel);
+  // }
 
   for (let i = 0; i < w; i++) {
     for (let j = 0; j < h; j++) {
-      let current = i + w * j;
-      let newx = floor(i + field[current].x) % w;
-      let newy = floor(j + field[current].y) % h;
-
-      let result = newx + w * newy;
+      // let current = i + w * j;
+      let current = order[i + w * j];
+      let x = current % w;
+      let y = floor(current / w);
+      let rx = round(x + field[0][current].x) % w;
+      let ry = round(y + field[0][current].y) % h;
+      let gx = round(x + field[1][current].x) % w;
+      let gy = round(y + field[1][current].y) % h;
+      let bx = round(x + field[2][current].x) % w;
+      let by = round(y + field[2][current].y) % h;
 
       // pixels[result * 4] = dry[current * 4];
       // pixels[result * 4 + 1] = dry[current * 4 + 1];
@@ -105,32 +117,15 @@ function diffuse() {
       pixels[current * 4 + 1] -= dry[current * 4 + 1];
       pixels[current * 4 + 2] -= dry[current * 4 + 2];
 
-      kernel(pixels, current, newx, newy, 0);
+      kernel(pixels, current, rx, ry, kernels[0][current], 0);
+      kernel(pixels, current, gx, gy, kernels[1][current], 1);
+      kernel(pixels, current, bx, by, kernels[2][current], 2);
     }
   }
-  pixels[3000] = pixels[10000];
   updatePixels();
 }
 
-function kernelLoop(arr, arr2, pos, newpos, kwidth, blurlevel, channel) {
-  let full = kwidth * 2 + 1;
-  for (let i = 0; i < kwidth * kwidth; i++) {
-    if (blurlevel > 1) {
-      kernelLoop(arr, pos, newpos, kwidth, blurlevel - 1, channel);
-    }
-    let xposk = i % kwidth;
-    let yposk = floor(i / kwidth);
-    let xshift = xposk - kwidth;
-    let yshift = yposk - kwidth;
-    let spot = (xshift + w * yshift) * 4 + channel + newpos;
-    arr[spot] = arr2[pos + channel];
-    // arr[spot] += arr2[pos + channel] / (kwidth * kwidth);
-    // arr[spot] = (arr [spot] + arr2[pos + channel] / (kwidth * kwidth)) % 255;
-    // arr[pos + channel] = 0;
-  }
-}
-
-function kernel(arr, current, x, y, ksize) {
+function kernel(arr, current, x, y, ksize, channel) {
   const kw = ksize * 2 + 1;
 
   for (let i = 0; i < kw; i ++) {
@@ -139,21 +134,12 @@ function kernel(arr, current, x, y, ksize) {
       let ky = y + j - ksize;
       let result = kx + w * ky;
 
-      arr[result * 4] += dry[current * 4] / (ksize * ksize);
-      arr[result * 4 + 1] += dry[current * 4 + 1] / (ksize * ksize);
-      arr[result * 4 + 2] += dry[current * 4 + 2] / (ksize * ksize);
+      arr[result * 4 + channel] = dry[current * 4 + channel];
+      // arr[result * 4 + channel] += dry[current * 4 + channel] / (ksize * ksize);
 
-      // arr[result * 4] = arr[result * 4] + dry[current * 4] / (ksize * ksize) % 255;
+      // arr[result * 4 + channel] = (arr[result * 4 + channel] + dry[current * 4 + channel] / (ksize * ksize)) % 255;
       // arr[result * 4 + 1] = arr[result * 4 + 1] + dry[current * 4 + 1] / (ksize * ksize) % 255
       // arr[result * 4 + 2] = arr[result * 4 + 2] + dry[current * 4 + 2] / (ksize * ksize) % 255
     }
-  }
-}
-
-function popKernels(arr) {
-  for (let i = 0; i < w * h; i++) {
-    let kernelsize = map(noise(i % w, floor(i / w)), 0, 1, 1, blur * 2 + 1);
-    kernelsize = round(kernelsize);
-    arr.push(kernelsize);
   }
 }
