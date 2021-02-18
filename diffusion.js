@@ -1,9 +1,10 @@
 let w;
 let h;
 
-const turb = 15;
-const blur = 5;
-const passes = 1;
+let turb = 15;
+let blur = 8;
+let passes = 1;
+let step = .1;
 
 // const dry = [];
 const field = [];
@@ -22,13 +23,14 @@ let div;
 let img;
 
 function preload() {
-  img = loadImage('./275x500.jpg');
+  // img = loadImage('./275x500.jpg');
+  img = loadImage('orpheus.jpg');
   w = img.width;
   h = img.height;
 }
 
 function setup() {
-  noLoop();
+  // noLoop();
   // noiseSeed(13);
   pixelDensity(1);
   w = img.width;
@@ -41,26 +43,38 @@ function setup() {
   button = createButton("more");
   button.position(w / 2, h + 15);
   button.mousePressed(diffuse);
+
+  turbslider = createSlider(0, 100, 100);
+  blurslider = createSlider(0, 10, 10);
+  passslider = createSlider(1, 5, 5);
+  stepslider = createSlider(1, 1000);
+
+  turbslider.position(100, h + 20);
+  blurslider.position(100, h + 30);
+  passslider.position(100, h + 40);
+  stepslider.position(100, h + 50);
+
+  turbslider.value(15);
+  blurslider.value(8);
+  passslider.value(1);
+  stepslider.value(1);
 }
 
 function draw() {
-  flowField(field);
+  turb = turbslider.value();
+  blur = blurslider.value();
+  passes = passslider.value();
+  step = stepslider.value() / 1000;
+  // flowField(field);
 }
 
-// function mousePressed() {
-//   console.log("oho!");
-//   diffuse();
-//   console.log("done");
-// }
-
 function flowField(arr) {
-  const step = .01;
   let xoff = 0;
   for (let i = 0; i < w; i++) {
     let yoff = 0;
     for (let j = 0; j < h; j++) {
       let noiseval = noise(xoff, yoff);
-      let noisecolor = map(noiseval, 0, 1  , 0, 255);
+      let noisecolor = map(noiseval, 0, 1, 0, 255);
       let noiseangle = noiseval * TWO_PI;
       let noisedist = map(noiseval, 0, 1, 0, turb);
       let noisevec = p5.Vector.fromAngle(noiseangle);
@@ -127,77 +141,11 @@ function diffuse() {
     let yblue = round(y + bluefield[i].y) % h;
     let newblue = (xblue + w * yblue) * 4;
 
-    // pixels[newred] = dry[pixelval];
-    // pixels[newgreen] = dry[pixelval + 1];
-    // pixels[newblue] = dry[pixelval + 2];
-
-    // pixels[pixelval] = (pixels[pixelval] / 2) + pixels[newval];
-    // let redkwidth = redkernels[i] * 2 + 1;
-    // for (let j = 0; j < redkwidth * redkwidth; j++) {
-    //   let xposk = j % redkwidth;
-    //   let yposk = floor(j / redkwidth);
-    //   let xshift = xposk - redkwidth;
-    //   let yshift = yposk - redkwidth;
-    //   let shiftval = (xshift + w * yshift) * 4;
-    //   let spot = (newred + shiftval);
-    //   pixels[spot] = (pixels[spot] + dry[pixelval + 2] / (redkwidth * redkwidth)) % 255;
-    //   // pixels[spot] = dry[pixelval];
-    //   // pixels[newred + shiftval] = pixels[pixelval];
-    //   // pixels[spot] += dry[pixelval] / (redkwidth * redkwidth);
-    //   // pixels[spot + 1] = dry[pixelval + 1];
-    //   // pixels[spot + 2] = dry[pixelval + 2];
-    //   // pixels[spot] += dry[pixelval] / (redkwidth * redkwidth);
-    //   // pixels[pixelval + shiftval] = /*pixels[pixelval + shiftval] + */pixels[newred]/* / (redkwidth * redkwidth)*/;
-    //   // pixels[pixelval] = 0;
-    // }
     kernelLoop(pixels, dry, pixelval, newred, redkernels[i], passes, 0);
     kernelLoop(pixels, dry, pixelval, newgreen, greenkernels[i], passes, 1);
     kernelLoop(pixels, dry, pixelval, newblue, bluekernels[i], passes, 2);
-
-    // let greenkwidth = greenkernels[i] * 2 + 1;
-    // for (let l = 0; l < greenkwidth * greenkwidth; l++) {
-    //   let xposk = l % greenkwidth;
-    //   let yposk = floor(l / greenkwidth);
-    //   let xshift = xposk - greenkwidth;
-    //   let yshift = yposk - greenkwidth;
-    //   let shiftval = (xshift + w * yshift) * 4 + 1;
-    //   let spot = (newgreen + shiftval);
-    //   pixels[spot] = (pixels[spot] + dry[pixelval + 2] / (greenkwidth * greenkwidth)) % 255;
-    //   // pixels[newgreen + shiftval] = pixels[pixelval + 1];
-    //   // pixels[spot] = dry[pixelval + 1];
-    //   // pixels[newgreen + shiftval] += pixels[pixelval] / (greenkwidth * greenkwidth);
-    //     // pixels[pixelval + shiftval] = pixels[pixelval + shiftval] + pixels[newgreen] / (greenkwidth * greenkwidth);
-    //   // pixels[spot] += dry[pixelval + 1] / (greenkwidth * greenkwidth);
-    //   // pixels[pixelval + 1] = 0;
-    // }
-
-    // let bluekwidth = bluekernels[i] * 2 + 1;
-    // for (let m = 0; m < bluekwidth * bluekwidth; m++) {
-    //   let xposk = m % bluekwidth;
-    //   let yposk = floor(m / bluekwidth);
-    //   let xshift = xposk - bluekwidth;
-    //   let yshift = yposk - bluekwidth;
-    //   let shiftval = (xshift + w * yshift) * 4 + 2;
-    //   let spot = (newblue + shiftval);
-    //   // pixels[spot] = dry[pixelval + 2];
-    //   pixels[spot] = (pixels[spot] + dry[pixelval + 2] / (bluekwidth * bluekwidth)) % 255;
-    //   // pixels[spot] += dry[pixelval + 2] / (bluekwidth * bluekwidth);
-    //   // pixels[pixelval + 2] = 0;
-    // }
   }
-  console.log(pixels[3000]);
   updatePixels();
-
-  // for (let i = 0; i < w; i++) {
-  //   for (let j = 0; j < h; j++) {
-  //     stroke(255, 255, 255, 10);
-  //     push();
-  //     translate(i, j);
-  //     rotate(redfield[i + w * j].heading());
-  //     line(0, 0, redfield[i + w * j].mag(), 0);
-  //     pop();
-  //   }
-  // }
 }
 
 function kernelLoop(arr, arr2, pos, newpos, kwidth, blurlevel, channel) {
