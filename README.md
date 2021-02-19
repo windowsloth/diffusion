@@ -8,12 +8,10 @@ One of the difficulties of working with taller materials is that if the platten 
 
 Of course, the printer isn't really intended to be used with the print head suspended high above the media; it can dry out the nozzles or cause cross-contimation of the inks. Since I'm not interested in damaging the printer that I get paid to operate and maintain, I wanted to see if I could find a way to recreate the effect digitally.
 
-## v0.0.1
+## v1.3.1
 
-This first very rough first attempt uses Perlin noise to build an array of
-vectors which then shift around the pixels of an image. The actual effect is not
-really on display yet, I'm just building a ground work for subsequent versions
-where the actual ink diffusion effect will be on display.
+Here is a quick look at how the current version of this project works.
+
 
 ## to-do list
 
