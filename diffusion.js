@@ -1,8 +1,9 @@
-let w;
-let h;
+let w = 0;
+let h = 0;
 
-const turb = 60;
-const blur = 15;
+let step = .01;
+let turb = 10;
+let blur = 10;
 const passes = 0;
 
 const dry = [];
@@ -23,34 +24,106 @@ let div;
 let img;
 
 function preload() {
-  img = loadImage('./kings.jpg');
-  w = img.width;
-  h = img.height;
+  // img = loadImage('./soldiers.jpg');
+  // w = img.width;
+  // h = img.height;
 }
 
 function setup() {
-  noLoop();
+  // noLoop();
   // noiseSeed(13);
   pixelDensity(1);
-  w = img.width;
-  h = img.height;
-  createCanvas(w/* * 3*/, h);
+  // if (img.width > 1000) {
+  //   img.resize(1000, 0);
+  //   console.log('width resized!');
+  // } else if (img.height > 1000) {
+  //   console.log('height resized!');
+  //   img.resize(0, 1000);
+  // }
+  // w = img.width;
+  // h = img.height;
+  // turb = w / (w / 100);
+  createCanvas(w/* * 3*/, h).parent('maincontent');
   // translate(w / 2, h / 2);
   background(220);
-  image(img, 0, 0);
+  // image(img, 0, 0);
 
-  button = createButton("more");
-  button.position(w / 2, h + 15);
+  browse = createFileInput(handleFile).id('file').class('upload').parent('gui');
+  browsel = createElement('label', 'Select File').attribute('for','file').parent('gui');
+  // browse.position(w / 2, h - 10);
+
+
+
+  turbslider = createSlider(0, 500, 5).parent('gui');
+  turbl = createP('Turbulence Level: ' + turb).class('label').parent('gui');
+  blurslider = createSlider(0, 50, 1).parent('gui');
+  blurl = createP('Blur Size: ' + blur).class('label').parent('gui');
+  noiseslider = createSlider(1, 1000, 5).parent('gui');
+  noisel = createP('Noise Variance: ' + step).class('label').parent('gui');
+
+  turbslider.value(turb);
+  // turbslider.position(w / 2, h + 45);
+  blurslider.value(blur);
+  // blurslider.position(w / 2, h + 65);
+  noiseslider.value(step * 1000);
+  // noiseslider.position(w / 2, h + 85);
+
+  button = createButton("more").parent('gui');
+  // button.position(w / 2, h + 25);
   button.mousePressed(diffuse);
 }
 
 function draw() {
-  flowField(field, 3);
-  diffuse();
+  turbl.html('Turbulence Level: ' + turb);
+  blurl.html('Blur Size: ' + blur);
+  noisel.html('Noise Variance: ' + step);
+  turb = turbslider.value();
+  blur = blurslider.value();
+  step = noiseslider.value() / 1000;
+
+  // browse.position(w / 2, - 10);
+  // turbslider.position(w / 2, h + 45);
+  // blurslider.position(w / 2, h + 65);
+  // noiseslider.position(w / 2, h + 85);
+  // if(img) {
+  //   image(img, 0, 0);
+  //   // diffuse();
+  // }
+  // flowField(field, 3);
+}
+
+function handleFile(file) {
+  img = null;
+  if (file.type === 'image') {
+    // img = createImg(file.data, '');
+    img = loadImage(file.data, img => {
+      if (img.width > 1000) {
+        console.log(img.width);
+        img.resize(1000, 0);
+        console.log('width resized!');
+      } else if (img.height > 1000) {
+        console.log('height resized!');
+        // img.resize(0, 1000);
+      }
+      w = img.width;
+      h = img.height;
+      resizeCanvas(w, h);
+      image(img, 0, 0);
+      // img.hide();
+    });
+    // createImg(img, '');
+    // img.hide();
+
+    // diffuse();
+    redraw();
+  } else {
+    // img = null;
+  }
 }
 
 function flowField(arr, channels) {
-  const step = .015;
+  console.log(step);
+  // const step = .015;
   for (let s = 0; s < channels; s++) {
     seeds[s] = random(millis()) * random(1000);
     noiseSeed(seeds[s]);
@@ -64,13 +137,13 @@ function flowField(arr, channels) {
         let noisedist = map(noiseval, 0, 1, 0, turb);
         let noisevec = p5.Vector.fromAngle(noiseangle);
         noisevec.mult(noisedist);
-        arr[s].push(noisevec);
+        arr[s][j + w * i] = noisevec;
 
-        kernels[s].push(floor(noiseval * blur));
+        kernels[s][j + w * i] = floor(noiseval * blur);
         // stroke(255, 255, 255, 10);
         // push();
         // translate(i, j);
-        // rotate(noisevec.heading());
+        // rotate(noisevec.hea  ding());
         // line(0, 0, noisevec.mag(), 0);
         // pop();
 
@@ -82,14 +155,15 @@ function flowField(arr, channels) {
 }
 
 function diffuse() {
+  flowField(field, 3);
   loadPixels();
   for (let p = 0; p < w * h; p++) {
     // console.log('hi');
-    order.push(p);
-    dry.push(pixels[p * 4]);
-    dry.push(pixels[p * 4 + 1]);
-    dry.push(pixels[p * 4 + 2]);
-    dry.push(pixels[p * 4 + 3]);
+    order[p] = p;
+    dry[p * 4] = pixels[p * 4];
+    dry[p * 4 + 1] = pixels[p * 4 + 1];
+    dry[p * 4 + 2] = pixels[p * 4 + 2];
+    dry[p * 4 + 3] = pixels[p * 4 + 3];
   }
   shuffle(order, true);
   // for (let pixel of pixels) {
@@ -122,6 +196,7 @@ function diffuse() {
       kernel(pixels, current, bx, by, kernels[2][current], 2);
     }
   }
+  console.log("done!");
   updatePixels();
 }
 
