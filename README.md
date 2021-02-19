@@ -10,14 +10,16 @@ Of course, the printer isn't really intended to be used with the print head susp
 
 ## v1.3.1
 
-Here is a quick look at how the current version of this project works.
+This current version of the project uses Perlin noise to generate an array of vectors. This size of this array is determined by the number of pixels in the image being modified. Each pixel of the image is then re-positioned based on its corresponding vector, and the result is displayed.
 
+Currently allows a user to select an image to modify. The turbulence (roughly equivalent to the printer's head distance), the blur size (the area the "ink" or color data winds up being spread across), and the noise level (Perlin noise detail) can all be set via sliders. The program can be run repeatedly, stacking the effect as many times as the user wants.
 
 ## to-do list
 
-* Shift pixels in image based on vector field
-* Shift individual color channels separately based on their own respective fields
-* Use custom depth map to scale the amount pixels are shifted
-* Add controls to affect turbulence of vector fields/other parameters
-* Add multiple "passes" to possibly further mimic the action of an actual printer
-* Port this all to something other than p5.js?
+[x] Shift pixels in image based on vector field
+[x] Shift individual color channels separately based on their own respective fields
+[ ] Use custom depth map to scale the amount pixels are shifted
+[x] Add controls to affect turbulence of vector fields/other parameters
+[ ] Build out GUI for customizing depth map/vector field's further
+[ ] Add multiple "passes" to possibly further mimic the action of an actual printer
+[ ] Port this all to something other than p5.js?
