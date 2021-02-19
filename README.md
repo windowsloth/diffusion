@@ -16,10 +16,10 @@ Currently allows a user to select an image to modify. The turbulence (roughly eq
 
 ## to-do list
 
-[x] Shift pixels in image based on vector field
-[x] Shift individual color channels separately based on their own respective fields
-[ ] Use custom depth map to scale the amount pixels are shifted
-[x] Add controls to affect turbulence of vector fields/other parameters
-[ ] Build out GUI for customizing depth map/vector field's further
-[ ] Add multiple "passes" to possibly further mimic the action of an actual printer
-[ ] Port this all to something other than p5.js?
+- [x] Shift pixels in image based on vector field
+- [x] Shift individual color channels separately based on their own respective fields
+- [ ] Use custom depth map to scale the amount pixels are shifted
+- [x] Add controls to affect turbulence of vector fields/other parameters
+- [ ] Build out GUI for customizing depth map/vector field's further
+- [ ] Add multiple "passes" to possibly further mimic the action of an actual printer
+- [ ] Port this all to something other than p5.js?
