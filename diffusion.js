@@ -40,10 +40,11 @@ function setup() {
   turbslider.value(turb);
   blurslider.value(blur);
   noiseslider.value(step * 1000);
-  diffbutton = createButton("more").parent('gui');
+  diffbutton = createButton("more").class('magic').parent('gui');
   // button.position(w / 2, h + 25);
   diffbutton.mousePressed(diffuse);
   undobutton = createButton('undo').class('inactive').parent('gui');
+  untobutton.mousePressed(undodiffusion);
 }
 
 function draw() {
