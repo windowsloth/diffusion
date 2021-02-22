@@ -12,6 +12,7 @@ const field = [[], [], []];
 const kernels = [[], [], []];
 let seeds = [];
 
+let undobutton;
 let div;
 
 let img;
@@ -39,9 +40,10 @@ function setup() {
   turbslider.value(turb);
   blurslider.value(blur);
   noiseslider.value(step * 1000);
-  button = createButton("more").parent('gui');
+  diffbutton = createButton("more").parent('gui');
   // button.position(w / 2, h + 25);
-  button.mousePressed(diffuse);
+  diffbutton.mousePressed(diffuse);
+  undobutton = createButton('undo').class('inactive').parent('gui');
 }
 
 function draw() {
@@ -79,6 +81,8 @@ function handleFile(file) {
 
 function undodiffusion() {
   if (dry.length > 0) {
+    undobutton.removeClass('inactive');
+    undobutton.class('active');
     loadPixels();
     for (let i = 0; i < pixels.length; i++) {
       pixels[i] = dry[i];
