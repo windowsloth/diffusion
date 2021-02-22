@@ -12,47 +12,22 @@ const field = [[], [], []];
 const kernels = [[], [], []];
 let seeds = [];
 
-// const redfield = [];
-// const greenfield = [];
-// const bluefield = [];
-// const redkernels = [];
-// const greenkernels = [];
-// const bluekernels = [];
-
 let div;
 
 let img;
 
 function preload() {
-  // img = loadImage('./soldiers.jpg');
-  // w = img.width;
-  // h = img.height;
 }
 
 function setup() {
   // noLoop();
-  // noiseSeed(13);
   pixelDensity(1);
-  // if (img.width > 1000) {
-  //   img.resize(1000, 0);
-  //   console.log('width resized!');
-  // } else if (img.height > 1000) {
-  //   console.log('height resized!');
-  //   img.resize(0, 1000);
-  // }
-  // w = img.width;
-  // h = img.height;
-  // turb = w / (w / 100);
   createCanvas(w/* * 3*/, h).parent('maincontent');
-  // translate(w / 2, h / 2);
   background(220);
-  // image(img, 0, 0);
 
   browse = createFileInput(handleFile).id('file').class('upload').parent('gui');
   browsel = createElement('label', 'Select File').attribute('for','file').parent('gui');
   // browse.position(w / 2, h - 10);
-
-
 
   turbslider = createSlider(0, 500, 5).parent('gui');
   turbl = createP('Turbulence Level: ' + turb).class('label').parent('gui');
@@ -62,12 +37,8 @@ function setup() {
   noisel = createP('Noise Variance: ' + step).class('label').parent('gui');
 
   turbslider.value(turb);
-  // turbslider.position(w / 2, h + 45);
   blurslider.value(blur);
-  // blurslider.position(w / 2, h + 65);
   noiseslider.value(step * 1000);
-  // noiseslider.position(w / 2, h + 85);
-
   button = createButton("more").parent('gui');
   // button.position(w / 2, h + 25);
   button.mousePressed(diffuse);
@@ -80,16 +51,6 @@ function draw() {
   turb = turbslider.value();
   blur = blurslider.value();
   step = noiseslider.value() / 1000;
-
-  // browse.position(w / 2, - 10);
-  // turbslider.position(w / 2, h + 45);
-  // blurslider.position(w / 2, h + 65);
-  // noiseslider.position(w / 2, h + 85);
-  // if(img) {
-  //   image(img, 0, 0);
-  //   // diffuse();
-  // }
-  // flowField(field, 3);
 }
 
 function handleFile(file) {
@@ -109,15 +70,19 @@ function handleFile(file) {
       h = img.height;
       resizeCanvas(w, h);
       image(img, 0, 0);
-      // img.hide();
     });
-    // createImg(img, '');
-    // img.hide();
-
-    // diffuse();
     redraw();
   } else {
     // img = null;
+  }
+}
+
+function undodiffusion() {
+  if (dry.length > 0) {
+    loadPixels();
+    for (let i = 0; i < pixels.length; i++) {
+      pixels[i] = dry[i];
+    }
   }
 }
 
