@@ -22,4 +22,5 @@ Currently allows a user to select an image to modify. The turbulence (roughly eq
 - [x] Add controls to affect turbulence of vector fields/other parameters
 - [ ] Build out GUI for customizing depth map/vector field's further
 - [ ] Add multiple "passes" to possibly further mimic the action of an actual printer
+- [ ] Shaders?
 - [ ] Port this all to something other than p5.js?
