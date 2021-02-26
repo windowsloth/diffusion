@@ -12,7 +12,7 @@ const field = [[], [], []];
 const kernels = [[], [], []];
 let seeds = [];
 
-let undobutton;
+//let undobutton;
 let div;
 
 let img;
