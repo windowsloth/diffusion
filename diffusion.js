@@ -44,7 +44,7 @@ function setup() {
   // button.position(w / 2, h + 25);
   diffbutton.mousePressed(diffuse);
   undobutton = createButton('undo').class('inactive').parent('gui');
-  untobutton.mousePressed(undodiffusion);
+  undobutton.mousePressed(undodiffusion);
 }
 
 function draw() {
